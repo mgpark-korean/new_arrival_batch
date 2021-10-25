@@ -13,8 +13,8 @@ package com.newarrival.crawler;
 
 import com.newarrival.dto.ProductDto;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.springframework.util.CollectionUtils;
 
@@ -29,19 +29,19 @@ import org.springframework.util.CollectionUtils;
  * @see
  * @since 1.0
  */
+@Slf4j
 public class StussyProductCrawler extends ProductCrawler {
 
   private String domain = "https://www.stussy.co.kr";
   private String nameAnchorSelector = "div.product-card a.product-card__title";
-  private String priceSelector = "div.product-card a.product-card__price";
+  private String priceSelector = ".product-card__price";
   private String thumbnailSelector = "div.product-card a.variant-card img";
-  private String soldOutSelector = "div.product-card div.product-card__variant-overlay";
 
   private List<WebElement> wrapElements;
 
   public StussyProductCrawler() {
-    String connectUrl = "https://www.stussy.co.kr/collections/new-arrivals";
-    this.webDriver = super.getChromeDriver(connectUrl);
+    super();
+    webDriver.get("https://www.stussy.co.kr/collections/new-arrivals");
     this.wrapElements = getWrapElement();
   }
 
@@ -56,15 +56,21 @@ public class StussyProductCrawler extends ProductCrawler {
       throw new IllegalAccessException("warp element is empty!!");
     }
 
+    if(wrapElements.size() <= index) {
+      return null;
+    }
+
     WebElement wrapElement = wrapElements.get(index);
-    return new ProductDto(
+    ProductDto product =  new ProductDto(
         getId(wrapElement),
         getName(wrapElement),
         getPrice(wrapElement),
         getUrl(wrapElement),
-        getThumbnail(wrapElement),
-        getSoldOut(wrapElement)
+        getThumbnail(wrapElement)
     );
+
+    log.info("crawling new arrival cursor {} / {}", index+1,wrapElements.size());
+    return product;
   }
 
   @Override
@@ -90,6 +96,7 @@ public class StussyProductCrawler extends ProductCrawler {
   @Override
   String getThumbnail(WebElement target) {
     WebElement nameAnchorTag = target.findElement(By.cssSelector(thumbnailSelector));
+    log.info("image src {}",nameAnchorTag.getAttribute("src").length());
     return nameAnchorTag.getAttribute("src");
   }
 
@@ -98,10 +105,5 @@ public class StussyProductCrawler extends ProductCrawler {
     WebElement nameAnchorTag = target.findElement(By.cssSelector(nameAnchorSelector));
     String hrefLink = nameAnchorTag.getAttribute("href");
     return domain + hrefLink;
-  }
-
-  @Override
-  boolean getSoldOut(WebElement target) {
-    return target.findElement(By.cssSelector(soldOutSelector)).isEnabled();
   }
 }

@@ -30,9 +30,16 @@ import org.openqa.selenium.chrome.ChromeOptions;
  * @since 1.0
  */
 public abstract class ProductCrawler {
+
   protected WebDriver webDriver;
 
-  protected WebDriver getChromeDriver(String connectUrl) {
+  ProductCrawler() {
+    System.setProperty("webdriver.chrome.driver",
+        "/Users/bigin2/IdeaProjects/bitbucket/new_arrival_batch/src/main/resources/chromedriver");
+    this.webDriver = initWebDriver();
+  }
+
+  protected WebDriver initWebDriver() {
     ChromeOptions options = new ChromeOptions();
     options.setHeadless(true);
     return new ChromeDriver(options);
@@ -43,9 +50,12 @@ public abstract class ProductCrawler {
   abstract List<WebElement> getWrapElement();
 
   abstract String getId(WebElement target);
+
   abstract String getName(WebElement target);
+
   abstract String getPrice(WebElement target);
+
   abstract String getThumbnail(WebElement target);
+
   abstract String getUrl(WebElement target);
-  abstract boolean getSoldOut(WebElement target);
 }

@@ -1,13 +1,13 @@
 version: "2"
 services:
   spring_batch_db:
-    container_name: spring_batch_db
+    container_name: new_arrival_batch
     image: mariadb:10.4
     restart: always
     ports:
-      - "33306:3306"
+      - "33307:3306"
     volumes:
-      - ~/docker-repo/spring_batch_db:/var/lib/mysql
+      - ~/docker-repo/new_arrival_batch:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=mariadb
       - MYSQL_DATABASE=spring_batch

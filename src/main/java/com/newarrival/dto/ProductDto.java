@@ -14,7 +14,6 @@ package com.newarrival.dto;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -31,7 +30,7 @@ import lombok.ToString;
  */
 @Getter
 @ToString
-@Entity(name = "product")
+@Entity(name = "products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductDto {
 
@@ -40,14 +39,12 @@ public class ProductDto {
       String name,
       String price,
       String url,
-      String thumbnail,
-      boolean soldout) {
+      String thumbnail) {
     this.id = id;
     this.name = name;
     this.price = price;
     this.url = url;
     this.thumbnail = thumbnail;
-    this.soldout = soldout;
   }
 
   @Id
@@ -56,5 +53,4 @@ public class ProductDto {
   private String price;
   private String url;
   private String thumbnail;
-  private boolean soldout;
 }

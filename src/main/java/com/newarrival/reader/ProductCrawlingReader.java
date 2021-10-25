@@ -29,11 +29,13 @@ import org.springframework.batch.item.ItemReader;
  */
 @Slf4j
 public class ProductCrawlingReader<T extends ProductDto> implements ItemReader<ProductDto> {
+
   private int cursorIdx;
-  private ProductCrawler crawler;
+  private final ProductCrawler crawler;
 
   public ProductCrawlingReader(ProductCrawler crawler) {
-    cursorIdx = 0;
+    this.cursorIdx = 0;
+    this.crawler = crawler;
   }
 
   @Override
