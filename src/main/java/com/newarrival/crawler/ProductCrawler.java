@@ -35,7 +35,7 @@ public abstract class ProductCrawler {
 
   ProductCrawler() {
     System.setProperty("webdriver.chrome.driver",
-        "/Users/bigin2/IdeaProjects/bitbucket/new_arrival_batch/src/main/resources/chromedriver");
+        "src/main/resources/chromedriver");
     this.webDriver = initWebDriver();
   }
 

@@ -21,11 +21,17 @@ import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.JpaItemWriter;
+import org.springframework.batch.item.database.builder.JpaCursorItemReaderBuilder;
 import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
+import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
+import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
+import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
 
 
 /**
@@ -61,7 +67,50 @@ public class ProductCrawlingConfiguration {
     return this.jobBuilderFactory.get("crawlingJob")
         .incrementer(new RunIdIncrementer())
         .start(this.stussyCrawlingStep())
+        .next(this.createCsvStep())
         .build();
+  }
+
+  @Bean
+  public Step createCsvStep() throws Exception {
+    return this.stepBuilderFactory.get("createCsvStep")
+            .<ProductDto, ProductDto>chunk(5)
+            .reader(jpaReader())
+            .writer(csvWriter())
+            .build();
+  }
+
+  private ItemWriter<? super ProductDto> csvWriter() throws Exception {
+    DelimitedLineAggregator<ProductDto> lineAggregator = new DelimitedLineAggregator<>();
+    lineAggregator.setDelimiter("\t");
+
+    BeanWrapperFieldExtractor<ProductDto> fieldExtractor = new BeanWrapperFieldExtractor<>();
+    fieldExtractor.setNames(new String[] {
+            "id", "name", "price", "url", "thumbnail"
+    });
+    lineAggregator.setFieldExtractor(fieldExtractor);
+
+    var itemWriter = new FlatFileItemWriterBuilder<ProductDto>()
+            .name("csvWriter")
+            .encoding("UTF-8")
+            .resource(new FileSystemResource("stussy/stussy-Crawling.csv"))
+            .headerCallback(writer -> writer.write("id\t상품명\t가격\turl\t썸네일"))
+            .footerCallback(writer -> writer.write("\n"))
+            .append(true)
+            .lineAggregator(lineAggregator)
+            .build();
+    itemWriter.afterPropertiesSet();
+    return itemWriter;
+  }
+
+  private ItemReader<? extends ProductDto> jpaReader() throws Exception {
+    var itemReader = new JpaCursorItemReaderBuilder<ProductDto>()
+            .name("jpaReader")
+            .entityManagerFactory(entityManagerFactory)
+            .queryString("select p from products p")
+            .build();
+    itemReader.afterPropertiesSet();
+    return itemReader;
   }
 
   @Bean
