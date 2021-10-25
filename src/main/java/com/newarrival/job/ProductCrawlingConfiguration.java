@@ -15,6 +15,8 @@ import com.newarrival.crawler.StussyProductCrawler;
 import com.newarrival.dto.ProductDto;
 import com.newarrival.reader.ProductCrawlingReader;
 import javax.persistence.EntityManagerFactory;
+
+import com.newarrival.writer.ProductExcelWriter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -32,6 +34,8 @@ import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.FileSystemResource;
+
+import java.util.List;
 
 
 /**
@@ -52,14 +56,17 @@ public class ProductCrawlingConfiguration {
   private final JobBuilderFactory jobBuilderFactory;
   private final StepBuilderFactory stepBuilderFactory;
   private final EntityManagerFactory entityManagerFactory;
+  private final ProductExcelWriter excelWriter;
 
   public ProductCrawlingConfiguration(
       JobBuilderFactory jobBuilderFactory,
       StepBuilderFactory stepBuilderFactory,
-      EntityManagerFactory entityManagerFactory) {
+      EntityManagerFactory entityManagerFactory,
+      ProductExcelWriter excelWriter) {
     this.jobBuilderFactory = jobBuilderFactory;
     this.stepBuilderFactory = stepBuilderFactory;
     this.entityManagerFactory = entityManagerFactory;
+    this.excelWriter = excelWriter;
   }
 
   @Bean
@@ -68,6 +75,7 @@ public class ProductCrawlingConfiguration {
         .incrementer(new RunIdIncrementer())
         .start(this.stussyCrawlingStep())
         .next(this.createCsvStep())
+        .next(this.createExcelStep())
         .build();
   }
 
@@ -79,6 +87,16 @@ public class ProductCrawlingConfiguration {
             .writer(csvWriter())
             .build();
   }
+
+  @Bean
+  public Step createExcelStep() throws Exception {
+    return this.stepBuilderFactory.get("createCsvStep")
+            .<ProductDto, ProductDto>chunk(65536)
+            .reader(jpaReader())
+            .writer(excelWriter)
+            .build();
+  }
+
 
   private ItemWriter<? super ProductDto> csvWriter() throws Exception {
     DelimitedLineAggregator<ProductDto> lineAggregator = new DelimitedLineAggregator<>();
