@@ -32,7 +32,7 @@ import org.springframework.util.CollectionUtils;
 @Slf4j
 public class StussyProductCrawler extends ProductCrawler {
 
-  private String domain = "https://www.stussy.co.kr";
+  private String wrapElementSelector = ".collection__products > .collection__product";
   private String nameAnchorSelector = "div.product-card a.product-card__title";
   private String priceSelector = ".product-card__price";
   private String thumbnailSelector = "div.product-card a.variant-card img";
@@ -47,7 +47,7 @@ public class StussyProductCrawler extends ProductCrawler {
 
   @Override
   List<WebElement> getWrapElement() {
-    return webDriver.findElements(By.cssSelector(".collection__products > .collection__product"));
+    return webDriver.findElements(By.cssSelector(wrapElementSelector));
   }
 
   @Override
@@ -78,32 +78,30 @@ public class StussyProductCrawler extends ProductCrawler {
     WebElement nameAnchorTag = target.findElement(By.cssSelector(nameAnchorSelector));
     String hrefLink = nameAnchorTag.getAttribute("href");
     final String[] splitList = hrefLink.split("/?variant=");
-    return splitList[0];
+    return splitList[1];
   }
 
   @Override
   String getName(WebElement target) {
     WebElement nameAnchorTag = target.findElement(By.cssSelector(nameAnchorSelector));
-    return nameAnchorTag.getText();
+    return nameAnchorTag.getText().trim();
   }
 
   @Override
   String getPrice(WebElement target) {
-    WebElement nameAnchorTag = target.findElement(By.cssSelector(priceSelector));
-    return nameAnchorTag.getText();
+    WebElement priceElement = target.findElement(By.cssSelector(priceSelector));
+    return priceElement.getText().trim();
   }
 
   @Override
   String getThumbnail(WebElement target) {
-    WebElement nameAnchorTag = target.findElement(By.cssSelector(thumbnailSelector));
-    log.info("image src {}",nameAnchorTag.getAttribute("src").length());
-    return nameAnchorTag.getAttribute("src");
+    WebElement imageElement = target.findElement(By.cssSelector(thumbnailSelector));
+    return imageElement.getAttribute("src");
   }
 
   @Override
   String getUrl(WebElement target) {
     WebElement nameAnchorTag = target.findElement(By.cssSelector(nameAnchorSelector));
-    String hrefLink = nameAnchorTag.getAttribute("href");
-    return domain + hrefLink;
+    return nameAnchorTag.getAttribute("href");
   }
 }
