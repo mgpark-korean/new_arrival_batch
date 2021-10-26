@@ -80,6 +80,15 @@ public class ProductCrawlingConfiguration {
   }
 
   @Bean
+  public Step stussyCrawlingStep() throws Exception {
+    return this.stepBuilderFactory.get("stussyCrawlingStep")
+        .<ProductDto, ProductDto>chunk(20)
+        .reader(stussyCrawingWriter())
+        .writer(stussyDBWriter())
+        .build();
+  }
+
+  @Bean
   public Step createCsvStep() throws Exception {
     return this.stepBuilderFactory.get("createCsvStep")
             .<ProductDto, ProductDto>chunk(5)
@@ -90,7 +99,7 @@ public class ProductCrawlingConfiguration {
 
   @Bean
   public Step createExcelStep() throws Exception {
-    return this.stepBuilderFactory.get("createCsvStep")
+    return this.stepBuilderFactory.get("createExcelStep")
             .<ProductDto, ProductDto>chunk(65536)
             .reader(jpaReader())
             .writer(excelWriter)
@@ -129,15 +138,6 @@ public class ProductCrawlingConfiguration {
             .build();
     itemReader.afterPropertiesSet();
     return itemReader;
-  }
-
-  @Bean
-  public Step stussyCrawlingStep() throws Exception {
-    return this.stepBuilderFactory.get("stussyCrawlingStep")
-        .<ProductDto, ProductDto>chunk(20)
-        .reader(stussyCrawingWriter())
-        .writer(stussyDBWriter())
-        .build();
   }
 
   private ItemWriter<? super ProductDto> stussyDBWriter() throws Exception {
