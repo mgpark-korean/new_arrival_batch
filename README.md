@@ -11,3 +11,5 @@
     > crawlingJob : 스투시 신상품 크롤링 step <br>
     > createCsvStep : CSV 생성 step <br>
     > createExcelStep : Excel 생성 step <br>
+
+spring batch 멀티프로세싱 적용 예정
